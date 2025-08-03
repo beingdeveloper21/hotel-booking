@@ -33,6 +33,7 @@ switch(type){
     }
     case "user.deleted":{
         await User.findByIdAndDelete(data.id);
+         await Hotel.deleteMany({ owner: data.id }); 
         break;
     }
     default:
