@@ -20,7 +20,7 @@ app.use(express.json())
 app.use(clerkMiddleware())
 
 //API to liten ClerkWebhooks
-app.use("/api/clerk",clerkWebhooks);
+app.post("/api/clerk/webhooks", express.json({ type: "*/*" }), clerkWebhooks);
 
 app.get('/',(req,res)=>res.send("API is Working"))
 app.use('/api/user',userRouter)
