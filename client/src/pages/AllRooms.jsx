@@ -67,7 +67,7 @@ const AllRooms = () => {
     if(selectedSort === 'Price Low to High'){
       return a.pricePerNight - b.pricePerNight;
     }
-    if(selectedSort === 'Price Low to High'){
+    if(selectedSort === 'Price High to Low'){
       return b.pricePerNight - a.pricePerNight;
     }
     if(selectedSort === 'Newest First'){
@@ -166,7 +166,7 @@ const AllRooms = () => {
             <div className='px-5 pt-5'>
               <p className='font-medium text-gray-800 pb-2'>Price Range</p>
               {priceRanges.map((range, index) => (
-                <CheckBox key={index} label={`$${currency} ${range}`} selected={selectedFilters.priceRange.includes(range)} onChange={(checked)=>handleFilterChange(checked,range,'priceRange')} />
+                <CheckBox key={index} label={`${currency} ${range}`} selected={selectedFilters.priceRange.includes(range)} onChange={(checked)=>handleFilterChange(checked,range,'priceRange')} />
               ))}
             </div>
             <div className='px-5 pt-5 pb-7'>
