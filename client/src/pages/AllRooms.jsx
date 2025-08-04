@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import StarRating from '../components/StarRating'
 import { assets } from '../assets/assets'
 import { useAppContext } from '../context/AppContext'
+import { useMemo } from 'react'
 
 const CheckBox = ({ label, selected = false, onChange = () => {} }) => {
   return (
