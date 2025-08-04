@@ -2,7 +2,7 @@ import React from 'react'
 import Title from '../../components/Title'
 import { useState } from 'react'
 import { assets } from '../../assets/assets'
-import { useAppContext } from '../context/AppContext'
+import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
 const AddRoom = () => {
   const {axios,getToken}=useAppContext()
@@ -35,7 +35,7 @@ const AddRoom = () => {
     try{
     const formData=new FormData()
     formData.append('roomType',inputs.roomType)
-    formData.append('pricePerNight',inputs.roompricePerNightType)
+    formData.append('pricePerNight',inputs.pricePerNight)
     //Converting amenities to array & keeping only enabled amenities
     const amenities=Object.keys(inputs.amenities).filter(key=>inputs.amenities[key])
     formData.append('amenities',JSON.stringify(amenities))
@@ -43,7 +43,7 @@ const AddRoom = () => {
     Object.keys(images).forEach((key)=>{
       images[key] && formData.append('images',images[key])
     })
-    const {data}=await axios.post('/api/rooms',formData,{headers:{Authorization:`Bearer ${await getToken}`}})
+    const {data}=await axios.post('/api/rooms',formData,{headers:{Authorization:`Bearer ${await getToken()}`}})
     if(data.success){
       toast.success(data.message)
       setInputs({
@@ -64,7 +64,7 @@ const AddRoom = () => {
     }
     }
     catch(error){
-     toast.erro(data.message)
+     toast.error(error.message)
     }
     finally{
       setLoading(false);
@@ -96,7 +96,7 @@ const AddRoom = () => {
         </div>
         <div>
           <p className='mt-4 text-gray-800'>Price <span className='text-xs'>/night</span></p>
-          <input type='number' placeholder='0' className='border border-gray-300 mt-1 rounded p-2 w-24' value={inputs.pricePerNight} onChange={e=>setInputs({...inputs,priciePerNight:e.target.value})} /> 
+          <input type='number' placeholder='0' className='border border-gray-300 mt-1 rounded p-2 w-24' value={inputs.pricePerNight} onChange={e=>setInputs({...inputs,pricePerNight:e.target.value})} /> 
         </div>
        </div>
       <p className='text-gray-800 mt-4'>Amenities</p>
@@ -108,7 +108,9 @@ const AddRoom = () => {
            </div>
         ))}
         </div>
-        <button className='bg-primary text-white px-8 py-2 rounded mt-8 cursor-pointer'>Add Room</button>
+        <button className='bg-primary text-white px-8 py-2 rounded mt-8 cursor-pointer' disabled={loading}>
+          {loading?'Adding...':"Add room"}
+        </button>
     </form>
   )   
 }

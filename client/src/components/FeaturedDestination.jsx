@@ -1,15 +1,16 @@
 import React from 'react'
-import {roomsDummyData} from '../assets/assets'
 import Title from './Title'
 import HotelCard from './HotelCard'
 import {useNavigate} from 'react-router-dom'
+import { useAppContext } from '../context/AppContext'
 const FeaturedDestination = () => {
-  const navigate=useNavigate()
-  return (
+  const {rooms,navigate}=useAppContext();
+  return   rooms.length>0 &&  (
+  
     <div className='flex flex-col items-center px-16 md:px-26 lg:px-24 bg-slate-50 py-20'>
       <Title title='Featured Destination' subTitle='Discover our handpicked selection of exceptional properties around the world,offering unparalleled luxury and unforgettable experiences.'/>
        <div className='flex flex-nowrap overflow-x-auto   gap-8 w-full mt-20 no-scrollbar'>
-        {roomsDummyData.slice(0,4).map((room,index)=>(
+        {rooms.slice(0,4).map((room,index)=>(
             <HotelCard key={room._id} room={room} index={index}/>
         ))}
       </div>
