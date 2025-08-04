@@ -4,6 +4,13 @@ import Sidebar from '../../components/hotelOwner/Sidebar'
 import { Outlet } from 'react-router-dom'
 
 const Layout = () => {
+   const {isOwner,navigate}=useAppContext()
+   useEffect(()=>{
+    if(!isOwner){
+      navigate('/')
+    }
+
+   },[isOwner])
   return (
     <div className='flex flex-col h-screen'>
       <Navbar/>
