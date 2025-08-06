@@ -46,7 +46,7 @@ export const AppProvider = ({children})=>{
 
     if (data.success) {
       setIsOwner(data.role === "hotelOwner");
-      setSearchedCities(data.recentSearchedCities);
+        setSearchedCities(Array.isArray(data.recentSearchedCities) ? data.recentSearchedCities : []);
     } else {
       setTimeout(fetchUser, 5000);
     }

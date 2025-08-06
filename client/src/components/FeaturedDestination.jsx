@@ -5,7 +5,7 @@ import {useNavigate} from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 const FeaturedDestination = () => {
   const {rooms,navigate}=useAppContext();
-  return   rooms.length>0 &&  (
+  return rooms.length>0 && (
   
     <div className='flex flex-col items-center px-16 md:px-26 lg:px-24 bg-slate-50 py-20'>
       <Title title='Featured Destination' subTitle='Discover our handpicked selection of exceptional properties around the world,offering unparalleled luxury and unforgettable experiences.'/>
