@@ -32,16 +32,18 @@ const FeaturedDestination = () => {
 
   return (
     rooms.length > 0 && (
-      <div className="flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 bg-slate-50 py-12 sm:py-16 lg:py-20">
+      <div className="hidden sm:flex flex-col items-center px-4 sm:px-8 md:px-16 lg:px-24 bg-slate-50 py-12 sm:py-16 lg:py-20">
         
         {/* Title */}
-        <Title
-          title="Featured Destination"
-          subTitle="Discover our handpicked selection of exceptional properties around the world, offering unparalleled luxury and unforgettable experiences."
-        />
+        <div className="max-w-3xl text-center">
+          <Title
+            title="Featured Destination"
+            subTitle="Discover our handpicked selection of exceptional properties around the world, offering unparalleled luxury and unforgettable experiences."
+          />
+        </div>
 
         {/* Responsive Grid */}
-        <div className="mt-10 sm:mt-16 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="mt-10 sm:mt-16 w-full max-w-screen-xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {rooms.slice(0, 4).map((room, index) => (
             <HotelCard key={room._id} room={room} index={index} />
           ))}
