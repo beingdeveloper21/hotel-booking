@@ -1,5 +1,6 @@
-import express from 'express'
+
 import "dotenv/config";
+import express from 'express'
 import cors from "cors";
 import connectDB from './configs/db.js';
 import { clerkMiddleware } from '@clerk/express'
@@ -14,6 +15,9 @@ connectDB()
 connectCloudinary()
 const app=express()
 app.use(cors()) //Enables cross-origin Resource Sharing
+
+//API to listen Stripe Webhooks
+app.post('/api/stripe', express.raw({type:"application/json"}))
 
 //Middleware
 app.use(express.json())
