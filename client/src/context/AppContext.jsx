@@ -40,7 +40,7 @@ export const AppProvider = ({children})=>{
       console.log('before try');
   try {
     console.log("inside log");
-    const token = await getToken();
+    const token = await getToken({ template: 'backend' });
     console.log("Token:", token);
 
     const { data } = await axios.get('/api/user', {
