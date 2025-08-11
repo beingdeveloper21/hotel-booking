@@ -15,7 +15,10 @@ import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
 connectDB()
 connectCloudinary()
 const app=express()
-app.use(cors()) //Enables cross-origin Resource Sharing
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+})); //Enables cross-origin Resource Sharing
 
 //API to listen Stripe Webhooks
 app.post('/api/stripe', express.raw({type:"application/json"}),stripeWebhooks);

@@ -53,7 +53,9 @@ const RoomDetails = () => {
              }else{
                 const {data}=await axios.post('/api/bookings/book',{room:id,checkInDate,checkOutDate,guests,paymentMethod:"Pay at hotel"},
                     {headers:{Authorization:`Bearer ${await getToken()}`}})
+                    console.log("Data",data);
                     if(data.success){
+                     
                       toast.success(data.message)
                       navigate('/my-bookings')
                       scrollTo(0,0)

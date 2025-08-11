@@ -85,10 +85,15 @@ export const createBooking=async(req,res)=>{
        res.json({success:true,message:"Booking created successfully"})
 
     }
+    // catch(error){
+    //     console.log(error);
+    //     res.json({success:false,message:"Failed to create booking"});
+    // }
     catch(error){
-        console.log(error);
-        res.json({success:false,message:"Failed to create booking"});
-    }
+    console.error("Booking creation error:", error);
+    res.status(500).json({success:false, message: error.message, stack: error.stack});
+}
+
 };
 //API to get all bookings for a user
 //GET /api/bookings/user
