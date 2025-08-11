@@ -13,20 +13,44 @@
 //         next()
 //     }
 //   }
+// import User from "../models/User.js";
+
+// export const protect = async (req, res, next) => {
+//   try {
+//     // const { userId } = req.auth(); // no parentheses
+//   console.log("DEBUG: req.auth =", req.auth); // <-- add this
+// const { userId } = req.auth; // <-- remove the parentheses
+// console.log("DEBUG: userId from Clerk =", userId);
+
+//     if (!userId) {
+//       return res.status(401).json({ success: false, message: "Not authenticated" });
+//     }
+
+//     const user = await User.findOne({ clerkId: userId }); // match by clerkId
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "User not found in DB" });
+//     }
+
+//     req.user = user;
+//     next();
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
 import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
-    // const { userId } = req.auth(); // no parentheses
-  console.log("DEBUG: req.auth =", req.auth); // <-- add this
-const { userId } = req.auth; // <-- remove the parentheses
-console.log("DEBUG: userId from Clerk =", userId);
+    const { userId } = await req.auth(); // ✅ await the function
+    console.log("DEBUG: userId from Clerk =", userId);
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
 
-    const user = await User.findOne({ clerkId: userId }); // match by clerkId
+    const user = await User.findOne({ clerkId: userId });
+    console.log("DEBUG: User from DB =", user);
+
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found in DB" });
     }
