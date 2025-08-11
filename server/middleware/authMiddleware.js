@@ -41,14 +41,14 @@ import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
-    const { userId } = await req.auth(); // ✅ await the function
+    const { userId } = await req.auth();
     console.log("DEBUG: userId from Clerk =", userId);
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
 
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findById(userId); // ✅ FIXED
     console.log("DEBUG: User from DB =", user);
 
     if (!user) {
