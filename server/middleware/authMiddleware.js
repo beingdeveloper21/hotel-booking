@@ -17,7 +17,11 @@ import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
-    const { userId } = req.auth(); // no parentheses
+    // const { userId } = req.auth(); // no parentheses
+  console.log("DEBUG: req.auth =", req.auth); // <-- add this
+const { userId } = req.auth; // <-- remove the parentheses
+console.log("DEBUG: userId from Clerk =", userId);
+
     if (!userId) {
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
