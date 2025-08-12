@@ -41,9 +41,10 @@ export const AppProvider = ({children})=>{
   try {
     console.log("inside log");
     const token = await getToken({ template: 'backend' });
+
     console.log("Token:", token);
 
-    const { data } = await axios.get('/api/user', {
+    const { data } = await axios.get('http://localhost:3000/api/user', {
     headers: { Authorization: `Bearer ${token}` }
   });
 
