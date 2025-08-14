@@ -1,63 +1,25 @@
-// import User from "../models/User.js"
-
-// //Middleware to check if user is authenticated
-
-// export const protect = async(req,res,next)=>{
-//     const {userId} = req.auth();
-//     if(!userId){
-//         res.json({success:false,message:"not authenticated"})
-//     }
-//     else{
-//         const user= await User.findById(userId);
-//         req.user=user;
-//         next()
-//     }
-//   }
-// import User from "../models/User.js";
-
-// export const protect = async (req, res, next) => {
-//   try {
-//     // const { userId } = req.auth(); // no parentheses
-//   console.log("DEBUG: req.auth =", req.auth); // <-- add this
-// const { userId } = req.auth; // <-- remove the parentheses
-// console.log("DEBUG: userId from Clerk =", userId);
-
-//     if (!userId) {
-//       return res.status(401).json({ success: false, message: "Not authenticated" });
-//     }
-
-//     const user = await User.findOne({ clerkId: userId }); // match by clerkId
-//     if (!user) {
-//       return res.status(404).json({ success: false, message: "User not found in DB" });
-//     }
-
-//     req.user = user;
-//     next();
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
+import { getAuth } from "@clerk/express";
 import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
-    const { userId } = await req.auth();
-    console.log("DEBUG: userId from Clerk =", userId);
-
+    const { userId } = getAuth(req); // ✅ use getAuth(req); no parentheses
     if (!userId) {
       return res.status(401).json({ success: false, message: "Not authenticated" });
     }
 
-    const user = await User.findById(userId); // ✅ FIXED
-    console.log("DEBUG: User from DB =", user);
+    // find by clerkId (string), not Mongo _id
+    let user = await User.findOne({ clerkId: userId });
 
+    // lazily create a minimal user if missing (optional but handy)
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found in DB" });
+      user = await User.create({ clerkId: userId });
     }
 
-    req.user = user;
+    req.user = user; // attach Mongoose user doc
     next();
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("protect middleware error:", err);
+    res.status(401).json({ success: false, message: "Not authorized" });
   }
 };
