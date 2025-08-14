@@ -38,32 +38,26 @@
 //   }
 // };
 import User from "../models/User.js";
+
 export const protect = async (req, res, next) => {
   try {
-    const { userId, sessionClaims } = req.auth(); // <- function call, not property
+    const { userId } = await req.auth();
     console.log("DEBUG: userId from Clerk =", userId);
 
-    let user = await User.findById(userId);
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+
+    const user = await User.findById(userId); // ✅ FIXED
+    console.log("DEBUG: User from DB =", user);
 
     if (!user) {
-      console.log("User not found in DB. Creating...");
-
-      user = await User.create({
-        _id: userId,
-        username: sessionClaims?.username || "Guest",
-        email: sessionClaims?.email || "unknown@example.com",
-        image: sessionClaims?.image || "https://via.placeholder.com/150", // <-- give default if missing
-        role: "user",
-        recentSearchedCities: []
-      });
+      return res.status(404).json({ success: false, message: "User not found in DB" });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    console.error(err);
-    res.status(401).json({ success: false, message: "Not authorized" });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
-
-
