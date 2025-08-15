@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import User from "../models/User.js";
-// import Hotel from "../models/Hotel.js"; // uncomment if you actually have this model
+// import Hotel from "../models/Hotel.js"; // Uncomment if needed
 
 const clerkWebhooks = async (req, res) => {
   try {
@@ -12,9 +12,11 @@ const clerkWebhooks = async (req, res) => {
       "svix-signature": req.headers["svix-signature"],
     };
 
-    // if this route uses express.raw, req.body is a Buffer
+    // req.body might be Buffer if using express.raw()
     const payloadString =
-      typeof req.body === "string" ? req.body : req.body?.toString?.() ?? JSON.stringify(req.body);
+      typeof req.body === "string"
+        ? req.body
+        : req.body?.toString?.() ?? JSON.stringify(req.body);
 
     // Verify signature
     wh.verify(payloadString, headers);
@@ -22,16 +24,23 @@ const clerkWebhooks = async (req, res) => {
     const evt = JSON.parse(payloadString);
     const { data, type } = evt;
 
+    const clerkId = data.id; // Clerk's unique ID for the user
+
     switch (type) {
       case "user.created": {
         const userData = {
-          clerkId: data.id,
-          email: data?.email_addresses?.[0]?.email_address ?? "",
-          username: [data?.first_name, data?.last_name].filter(Boolean).join(" ") || data?.username || "",
+          clerkId, // Store Clerk's ID here
+          email:
+            data?.email_addresses?.[0]?.email_address ?? "",
+          username:
+            [data?.first_name, data?.last_name]
+              .filter(Boolean)
+              .join(" ") || data?.username || "",
           image: data?.image_url ?? "",
         };
+
         await User.findOneAndUpdate(
-          { clerkId: data.id },
+          { clerkId },
           { $set: userData, $setOnInsert: { recentSearchedCities: [] } },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
@@ -40,18 +49,22 @@ const clerkWebhooks = async (req, res) => {
 
       case "user.updated": {
         const userData = {
-          email: data?.email_addresses?.[0]?.email_address ?? "",
-          username: [data?.first_name, data?.last_name].filter(Boolean).join(" ") || data?.username || "",
+          email:
+            data?.email_addresses?.[0]?.email_address ?? "",
+          username:
+            [data?.first_name, data?.last_name]
+              .filter(Boolean)
+              .join(" ") || data?.username || "",
           image: data?.image_url ?? "",
         };
-        await User.findOneAndUpdate({ clerkId: data.id }, { $set: userData });
+        await User.findOneAndUpdate({ clerkId }, { $set: userData });
         break;
       }
 
       case "user.deleted": {
-        await User.findOneAndDelete({ clerkId: data.id });
-        // If you really want to clean up hotels owned by this user, ensure you store owner as clerkId:
-        // await Hotel.deleteMany({ ownerClerkId: data.id });
+        await User.findOneAndDelete({ clerkId });
+        // If hotels are linked to clerkId, also delete them:
+        // await Hotel.deleteMany({ ownerClerkId: clerkId });
         break;
       }
 

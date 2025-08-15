@@ -1,25 +1,21 @@
-import { getAuth } from "@clerk/express";
 import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
-    const { userId } = getAuth(req); // ✅ use getAuth(req); no parentheses
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Not authenticated" });
+    if (!req.auth || !req.auth.userId) {
+      return res.status(401).json({ message: "Not authorized" });
     }
 
-    // find by clerkId (string), not Mongo _id
-    let user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId: req.auth.userId });
 
-    // lazily create a minimal user if missing (optional but handy)
     if (!user) {
-      user = await User.create({ clerkId: userId });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    req.user = user; // attach Mongoose user doc
+    req.user = user; // attaches MongoDB user object
     next();
-  } catch (err) {
-    console.error("protect middleware error:", err);
-    res.status(401).json({ success: false, message: "Not authorized" });
+  } catch (error) {
+    console.error("Protect middleware error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

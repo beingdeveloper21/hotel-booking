@@ -7,4 +7,4 @@ const hotelRouter = express.Router();
 
 hotelRouter.post('/', requireAuth(), protect, registerHotel);
 
-export default hotelRouter; // ✅ default export
+export default hotelRouter;
