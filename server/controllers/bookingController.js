@@ -7,7 +7,7 @@ import Stripe from "stripe";
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Utility: check room availability
-const checkAvailability = async ({ checkInDate, checkOutDate, room }) => {
+export const checkAvailability = async ({ room, checkInDate, checkOutDate }) => {
     try {
         const bookings = await Booking.find({
             room,
@@ -119,7 +119,13 @@ export const getHotelBookings = async (req, res) => {
         }
 
         const bookings = await Booking.find({ hotel: hotel._id })
-            .populate("room hotel user")
+            .populate("room hotel")
+            .populate({
+                path: "user",
+                localField: "user",       // field inside Booking model
+                foreignField: "clerkId",  // field inside User model
+                justOne: true
+            })
             .sort({ createdAt: -1 });
 
         const totalBookings = bookings.length;
