@@ -1,21 +1,24 @@
 import User from "../models/User.js";
 
+// Middleware to fetch user from MongoDB based on Clerk authentication
 export const protect = async (req, res, next) => {
   try {
-    if (!req.auth || !req.auth.userId) {
-      return res.status(401).json({ message: "Not authorized" });
+    // Clerk middleware (requireAuth) attaches req.auth
+    const clerkId = req.auth?.userId;
+    if (!clerkId) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
     }
 
-    const user = await User.findOne({ clerkId: req.auth.userId });
-
+    // Fetch user from MongoDB
+    const user = await User.findOne({ clerkId });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    req.user = user; // attaches MongoDB user object
+    req.user = user; // attach DB user to request
     next();
   } catch (error) {
-    console.error("Protect middleware error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("protect middleware error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

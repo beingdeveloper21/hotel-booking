@@ -5,7 +5,10 @@ import { getUserData, storeRecentSearchedCities } from "../controllers/userContr
 
 const userRouter = express.Router();
 
+// GET /api/user - fetch logged-in user
 userRouter.get("/", requireAuth(), protect, getUserData);
+
+// POST /api/user/store-recent-search - add city to recent searches
 userRouter.post("/store-recent-search", requireAuth(), protect, storeRecentSearchedCities);
 
 export default userRouter;
