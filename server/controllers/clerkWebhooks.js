@@ -1,9 +1,9 @@
 import { Webhook } from "svix";
 import User from "../models/User.js";
-// import Hotel from "../models/Hotel.js"; // Uncomment if needed
 
 const clerkWebhooks = async (req, res) => {
   try {
+
     const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
     const headers = {
@@ -12,19 +12,20 @@ const clerkWebhooks = async (req, res) => {
       "svix-signature": req.headers["svix-signature"],
     };
 
-    // req.body might be Buffer if using express.raw()
+    
     const payloadString =
       typeof req.body === "string"
         ? req.body
         : req.body?.toString?.() ?? JSON.stringify(req.body);
 
-    // Verify signature
+
     wh.verify(payloadString, headers);
 
     const evt = JSON.parse(payloadString);
     const { data, type } = evt;
 
-    const clerkId = data.id; // Clerk's unique ID for the user
+
+    const clerkId = data.id; 
 
     switch (type) {
       case "user.created": {
@@ -39,11 +40,13 @@ const clerkWebhooks = async (req, res) => {
           image: data?.image_url ?? "",
         };
 
-        await User.findOneAndUpdate(
+
+        const user = await User.findOneAndUpdate(
           { clerkId },
           { $set: userData, $setOnInsert: { recentSearchedCities: [] } },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+
         break;
       }
 
@@ -63,7 +66,6 @@ const clerkWebhooks = async (req, res) => {
 
       case "user.deleted": {
         await User.findOneAndDelete({ clerkId });
-        // If hotels are linked to clerkId, also delete them:
         // await Hotel.deleteMany({ ownerClerkId: clerkId });
         break;
       }
