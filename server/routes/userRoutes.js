@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-git s
-=======
 import { requireAuth } from "@clerk/express";
 import express from "express";
 import { createUserIfMissing, getUserData, storeRecentSearchedCities } from "../controllers/userController.js";
@@ -16,6 +13,4 @@ userRouter.post("/store-recent-search", requireAuth(), protect, storeRecentSearc
 
 userRouter.post("/create-if-missing", requireAuth(), createUserIfMissing);
 
-
 export default userRouter;
->>>>>>> d96cfafa12977dd61dba795d4bd111cac4efd2f1
