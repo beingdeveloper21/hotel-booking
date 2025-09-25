@@ -37,10 +37,13 @@ import listIcon from "./listIcon.svg";
 import uploadArea from "./uploadArea.svg";
 import totalBookingIcon from "./totalBookingIcon.svg";
 import totalRevenueIcon from "./totalRevenueIcon.svg";
+import abouticon from "./unnamed.png"
+import host from "./5984968.png"
 
 
 export const assets = {
     logo,
+    abouticon,
     searchIcon,
     userIcon,
     calenderIcon,
@@ -73,7 +76,7 @@ export const assets = {
     totalBookingIcon,
     totalRevenueIcon,
 }
-
+export {host};
 export const cities = [
     "Dubai",
     "Singapore",

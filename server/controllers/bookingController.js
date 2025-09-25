@@ -1,3 +1,4 @@
+// controllers/bookingController.js
 import Booking from "../models/Booking.js";
 import Room from "../models/Room.js";
 import Hotel from "../models/Hotel.js";
@@ -14,8 +15,7 @@ export const checkAvailability = async ({ room, checkInDate, checkOutDate }) => 
             checkInDate: { $lte: checkOutDate },
             checkOutDate: { $gte: checkInDate },
         });
-
-        return bookings.length === 0; // true if available
+        return bookings.length === 0;
     } catch (error) {
         console.error("Availability check error:", error);
         throw new Error("Error checking availability");
@@ -29,13 +29,18 @@ export const checkAvailabilityAPI = async (req, res) => {
         const isAvailable = await checkAvailability({ checkInDate, checkOutDate, room });
         res.json({ success: true, isAvailable });
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // API: Create booking
 export const createBooking = async (req, res) => {
     try {
+        // ensure req.user exists
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
         const { room, checkInDate, checkOutDate, guests } = req.body;
         const user = req.user._id;
 
@@ -68,27 +73,30 @@ export const createBooking = async (req, res) => {
             totalPrice,
         });
 
-        // Send confirmation email
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: req.user.email,
-            subject: "Hotel Booking Details",
-            html: `
-                <h2>Your Booking Details</h2>
-                <p>Dear ${req.user.username},</p>
-                <p>Thank you for your booking! Here are your details:</p>
-                <ul>
-                    <li><strong>Booking ID:</strong> ${booking._id}</li>
-                    <li><strong>Hotel Name:</strong> ${roomData.hotel.name}</li>
-                    <li><strong>Location:</strong> ${roomData.hotel.address}</li>
-                    <li><strong>Check-In:</strong> ${booking.checkInDate.toDateString()}</li>
-                    <li><strong>Check-Out:</strong> ${booking.checkOutDate.toDateString()}</li>
-                    <li><strong>Total Amount:</strong> ${process.env.CURRENCY || '$'} ${booking.totalPrice}</li>
-                </ul>
-                <p>We look forward to welcoming you!</p>
-            `,
-        };
-        await transporter.sendMail(mailOptions);
+        // Send confirmation email (wrapped in try/catch to avoid crashing on failure)
+        try {
+            const mailOptions = {
+                from: process.env.SENDER_EMAIL,
+                to: req.user.email || "test@example.com",
+                subject: "Hotel Booking Details",
+                html: `
+                    <h2>Your Booking Details</h2>
+                    <p>Dear ${req.user.username || "Guest"},</p>
+                    <p>Thank you for your booking! Here are your details:</p>
+                    <ul>
+                        <li><strong>Booking ID:</strong> ${booking._id}</li>
+                        <li><strong>Hotel Name:</strong> ${roomData.hotel.name}</li>
+                        <li><strong>Location:</strong> ${roomData.hotel.address}</li>
+                        <li><strong>Check-In:</strong> ${booking.checkInDate.toDateString()}</li>
+                        <li><strong>Check-Out:</strong> ${booking.checkOutDate.toDateString()}</li>
+                        <li><strong>Total Amount:</strong> ${process.env.CURRENCY || "$"} ${booking.totalPrice}</li>
+                    </ul>
+                `,
+            };
+            await transporter.sendMail(mailOptions);
+        } catch (mailError) {
+            console.error("Email sending failed:", mailError);
+        }
 
         res.json({ success: true, message: "Booking created successfully", booking });
     } catch (error) {
@@ -100,32 +108,33 @@ export const createBooking = async (req, res) => {
 // API: Get all bookings for a user
 export const getUserBookings = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
         const user = req.user._id;
         const bookings = await Booking.find({ user })
             .populate("room hotel")
             .sort({ createdAt: -1 });
         res.json({ success: true, bookings });
     } catch (error) {
-        res.json({ success: false, message: "Failed to fetch bookings" });
+        res.status(500).json({ success: false, message: "Failed to fetch bookings" });
     }
 };
 
 // API: Get all bookings for a hotel owner
 export const getHotelBookings = async (req, res) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+
         const hotel = await Hotel.findOne({ owner: req.user._id });
         if (!hotel) {
             return res.json({ success: false, message: "No hotel found" });
         }
 
         const bookings = await Booking.find({ hotel: hotel._id })
-            .populate("room hotel")
-            .populate({
-                path: "user",
-                localField: "user",       // field inside Booking model
-                foreignField: "clerkId",  // field inside User model
-                justOne: true
-            })
+            .populate("room hotel user") // ✅ simpler populate
             .sort({ createdAt: -1 });
 
         const totalBookings = bookings.length;
@@ -133,7 +142,7 @@ export const getHotelBookings = async (req, res) => {
 
         res.json({ success: true, dashboardData: { totalBookings, totalRevenue, bookings } });
     } catch (error) {
-        res.json({ success: false, message: "Failed to fetch bookings" });
+        res.status(500).json({ success: false, message: "Failed to fetch bookings" });
     }
 };
 
@@ -151,16 +160,14 @@ export const stripePayment = async (req, res) => {
             return res.status(404).json({ success: false, message: "Room or hotel not found" });
         }
 
-        const { origin } = req.headers;
+        const origin = req.headers.origin || process.env.CLIENT_URL;
 
         const session = await stripeInstance.checkout.sessions.create({
             line_items: [
                 {
                     price_data: {
                         currency: "usd",
-                        product_data: {
-                            name: roomData.hotel.name,
-                        },
+                        product_data: { name: roomData.hotel.name },
                         unit_amount: booking.totalPrice * 100,
                     },
                     quantity: 1,

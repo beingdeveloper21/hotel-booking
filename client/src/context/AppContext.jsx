@@ -1,10 +1,8 @@
-
 import { useAuth, useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
 
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
@@ -13,110 +11,97 @@ const AppContext = createContext();
 export const AppProvider = ({ children }) => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
   const navigate = useNavigate();
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const { getToken } = useAuth();
 
-  const [isOwner, setIsOwner] = useState(false)
-  const [showHotelReg, setShowHotelReg] = useState(false)
-  const [searchedCities, setSearchedCities] = useState([])
-  const [rooms, setRooms] = useState([])
+  const [isOwner, setIsOwner] = useState(false);
+  const [showHotelReg, setShowHotelReg] = useState(false);
+  const [searchedCities, setSearchedCities] = useState([]);
+  const [rooms, setRooms] = useState([]);
+
+  // ✅ Fetch all rooms from backend
   const fetchRooms = async () => {
     try {
-      const { data } = await axios.get('/api/rooms')
+      const { data } = await axios.get("/api/rooms");
       if (data.success) {
-        setRooms(data.rooms)
-      }
-      else {
+        setRooms(data.rooms);
+      } else {
         toast.error(data.message);
       }
-    }
-    catch (error) {
+    } catch (error) {
       toast.error(error.message);
     }
-  }
+  };
+
+  // ✅ Fetch user info
+  // const fetchUser = async () => {
+  //   try {
+  //     const token = await getToken();
+  //     const { data } = await axios.get("/api/user", {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     if (data.success) {
+  //       setIsOwner(data.role === "hotelOwner");
+  //       setSearchedCities(
+  //         Array.isArray(data.recentSearchedCities)
+  //           ? data.recentSearchedCities
+  //           : []
+  //       );
+  //     } else {
+  //       // Retry after 5s if user not fetched
+  //       setTimeout(fetchUser, 5000);
+  //     }
+  //   } catch (error) {
+  //     console.error("fetchUser error:", error);
+  //     setTimeout(fetchUser, 5000);
+  //   }
+  // };
   const fetchUser = async () => {
-    console.log('Attempting to fetch user...');
-    try {
-      const token = await getToken();
-      console.log("Token:", token ? "Present" : "Missing");
-
-      const { data } = await axios.get('/api/user', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (data.success) {
-        console.log("User fetched successfully:", data.user);
-        setIsOwner(data.user.role === "hotelOwner");
-        setSearchedCities(Array.isArray(data.user.recentSearchedCities) ? data.user.recentSearchedCities : []);
-      } else {
-        console.log("User not found in database, attempting manual creation...");
-        const createResponse = await axios.post('/api/user/create-if-missing', {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (createResponse.data.success) {
-          console.log("User created successfully, retrying fetch...");
-          setTimeout(fetchUser, 1000);
-        } else {
-          console.log("Failed to create user, retrying in 3 seconds...");
-          setTimeout(fetchUser, 3000);
-        }
-      }
-    } catch (error) {
-      console.error("fetchUser error:", error);
-      if (error.response?.status === 404) {
-        console.log("User not found, trying to create manually...");
-        try {
-          const token = await getToken();
-          const createResponse = await axios.post('/api/user/create-if-missing', {}, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-
-<<<<<<< HEAD
-    console.log("Token:", token);
-
-   const { data } = await axios.get('http://localhost:3000/api/user', {
-  headers: { Authorization: `Bearer ${token}` }
-});
+  try {
+    const token = await getToken();
+    const { data } = await axios.get("/api/user", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     if (data.success) {
-      setIsOwner(data.role === "hotelOwner");
-        setSearchedCities(Array.isArray(data.recentSearchedCities) ? data.recentSearchedCities : []);
-    } else {
-      setTimeout(fetchUser, 5000);
-=======
-          if (createResponse.data.success) {
-            console.log("User created successfully, retrying fetch...");
-            setTimeout(fetchUser, 1000);
-          }
-        } catch (createError) {
-          console.error("Error creating user:", createError);
-          setTimeout(fetchUser, 5000);
-        }
-      } else {
-        console.log("Other error, retrying fetchUser in 3 seconds...");
-        setTimeout(fetchUser, 3000);
-      }
->>>>>>> d96cfafa12977dd61dba795d4bd111cac4efd2f1
+      setIsOwner(data.user.role === "hotelOwner"); // ✅ check role from backend
+      setSearchedCities(Array.isArray(data.user.recentSearchedCities) ? data.user.recentSearchedCities : []);
     }
-  }; useEffect(() => {
-    if (user) {
-      fetchUser();
-    }
+  } catch (error) {
+    console.error("fetchUser error:", error);
+  }
+};
+
+
+  // Fetch user once user is loaded
+  useEffect(() => {
+    if (user) fetchUser();
   }, [user]);
 
+  // Fetch rooms on app load
   useEffect(() => {
-    fetchRooms()
-  }, [])
-
+    fetchRooms();
+  }, []);
 
   const value = {
-    currency, navigate, user, getToken, isOwner, setIsOwner, axios, showHotelReg, setShowHotelReg, searchedCities, setSearchedCities, rooms, setRooms
-  }
-  return (
-    <AppContext.Provider value={value}>
-      {children}
-    </AppContext.Provider>
-  )
-}
+    currency,
+    navigate,
+    user,
+    getToken,
+    isOwner,
+    setIsOwner,
+    axios,
+    showHotelReg,
+    setShowHotelReg,
+    searchedCities,
+    setSearchedCities,
+    rooms,
+    setRooms,
+    fetchRooms, // ✅ Exposed for components like AddRoom
+  };
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+};
+
 export const useAppContext = () => useContext(AppContext);
