@@ -56,28 +56,11 @@ import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
 connectDB()
 connectCloudinary()
 const app=express()
-// app.use(cors({
-//   origin: "http://localhost:5173",
-//   credentials: true
-// })); //Enables cross-origin Resource Sharing
-const allowedOrigins = [
-  "http://localhost:5173" // your local dev
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow localhost
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    // Allow any Vercel frontend URL (preview or production)
-    if (/https:\/\/quickstay-.*\.vercel\.app$/.test(origin)) {
-      return callback(null, true);
-    }
-    callback(new Error("Not allowed by CORS"));
-  },
+  origin: ["http://localhost:5173","https://hotel-booking-rho-lemon.vercel.app"],
   credentials: true
-}));
+})); //Enables cross-origin Resource Sharing
+
 //API to listen Stripe Webhooks
 app.post('/api/stripe-webhook', express.raw({type:"application/json"}),stripeWebhooks);
 
