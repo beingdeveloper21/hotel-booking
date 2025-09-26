@@ -57,7 +57,7 @@ connectDB()
 connectCloudinary()
 const app=express()
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173","https://quickstay-9oabsyh6y-prem-developers-projects.vercel.app"],
   credentials: true
 })); //Enables cross-origin Resource Sharing
 
