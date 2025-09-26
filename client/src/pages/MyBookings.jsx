@@ -110,60 +110,70 @@
 // }
 
 // export default MyBookings
-import React, { useState, useEffect } from "react";
-import Title from "../components/Title";
-import { assets } from "../assets/assets";
-import { useAppContext } from "../context/AppContext";
-import toast from "react-hot-toast";
+
+import React, { useState, useEffect } from 'react'
+import Title from '../components/Title'
+import { assets } from '../assets/assets'
+import { useAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
 
 const MyBookings = () => {
-  const { axios, getToken, user } = useAppContext();
-  const [bookings, setBookings] = useState([]);
+  const { axios, getToken, user } = useAppContext()
+  const [bookings, setBookings] = useState([])
 
   const fetchUserBookings = async () => {
     try {
-      const { data } = await axios.get("/api/bookings/user", {
+      const { data } = await axios.get('/api/bookings/user', {
         headers: { Authorization: `Bearer ${await getToken()}` },
-      });
-      if (data.success) setBookings(data.bookings);
-      else toast.error(data.message);
+      })
+      if (data.success) {
+        setBookings(data.bookings)
+      } else {
+        toast.error(data.message)
+      }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message)
     }
-  };
+  }
 
   const handlePayment = async (bookingId) => {
     try {
       const { data } = await axios.post(
-        "/api/bookings/stripe-payment",
+        '/api/bookings/stripe-payment',
         { bookingId },
         { headers: { Authorization: `Bearer ${await getToken()}` } }
-      );
-
+      )
       if (data.success) {
-        setBookings((prev) =>
-          prev.map((b) =>
-            b._id === bookingId
-              ? { ...b, isPaid: true, paymentMethod: "Stripe" }
-              : b
-          )
-        );
-        window.location.href = data.url;
-      } else toast.error(data.message);
+        window.location.href = data.url
+      } else {
+        toast.error(data.message)
+      }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message)
     }
-  };
+  }
 
+  // This useEffect will run once when the user object becomes available
   useEffect(() => {
-    if (user) fetchUserBookings();
-  }, [user]);
+    if (user) {
+      fetchUserBookings()
+    }
+  }, [user])
+
+  // ✅ ADD THIS: This ensures bookings are re-fetched every time the component is viewed.
+  // This is crucial for seeing the 'Paid' status after returning from Stripe.
+  useEffect(() => {
+    if (user) {
+      fetchUserBookings()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="py-28 md:pb-35 md:pt-32 px-4 md:px-16 lg:px-24 xl:px-32">
       <Title
         title="My Bookings"
-        subTitle="Manage your hotel reservations in one place"
+        subTitle="Easily manage your past,current and upcoming hotel reservations in one place.Plan your trips seamlessly with just a few clicks"
         align="left"
       />
       <div className="max-w-6xl mt-8 w-full text-gray-800">
@@ -172,7 +182,6 @@ const MyBookings = () => {
           <div className="w-1/3">Date and Timing</div>
           <div className="w-1/3">Payment</div>
         </div>
-
         {bookings.map((booking) => (
           <div
             key={booking._id}
@@ -187,8 +196,9 @@ const MyBookings = () => {
               />
               <div className="flex flex-col gap-1.5 max-md:mt-3 min-md:ml-4">
                 <p className="font-playfair text-2xl">
-                  {booking.hotel.name}{" "}
+                  {booking.hotel.name}
                   <span className="font-inter text-sm">
+                    {' '}
                     ({booking.room.roomType})
                   </span>
                 </p>
@@ -203,7 +213,6 @@ const MyBookings = () => {
                 <p className="text-base">Total: ${booking.totalPrice}</p>
               </div>
             </div>
-
             {/* Date and Timings */}
             <div className="flex flex-row md:items-center md:gap-12 mt-3 gap-8">
               <div>
@@ -219,24 +228,22 @@ const MyBookings = () => {
                 </p>
               </div>
             </div>
-
             {/* Payment Status */}
             <div className="flex flex-col items-start justify-center pt-3">
               <div className="flex items-center gap-2">
                 <div
                   className={`h-3 w-3 rounded-full ${
-                    booking.isPaid ? "bg-green-500" : "bg-red-500"
+                    booking.isPaid ? 'bg-green-500' : 'bg-red-500'
                   }`}
                 ></div>
                 <p
                   className={`text-sm ${
-                    booking.isPaid ? "text-green-500" : "text-red-500"
+                    booking.isPaid ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
-                  {booking.isPaid ? "Paid" : "Unpaid"}
+                  {booking.isPaid ? 'Paid' : 'Unpaid'}
                 </p>
               </div>
-
               {!booking.isPaid && (
                 <button
                   onClick={() => handlePayment(booking._id)}
@@ -250,7 +257,7 @@ const MyBookings = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MyBookings;
+export default MyBookings

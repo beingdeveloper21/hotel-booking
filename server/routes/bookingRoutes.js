@@ -1,5 +1,6 @@
 import express from "express";
 import { requireAuth } from "@clerk/express";
+
 import {
   checkAvailabilityAPI,
   createBooking,
