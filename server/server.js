@@ -57,7 +57,7 @@ connectDB()
 connectCloudinary()
 const app=express()
 app.use(cors({
-  origin: ["http://localhost:5173","https://hotel-booking-rho-lemon.vercel.app"],
+  origin: ["http://localhost:5173","https://hotel-booking-rho-lemon.vercel.app","https://quickstay-pink-five.vercel.app"],
    methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 })); //Enables cross-origin Resource Sharing
