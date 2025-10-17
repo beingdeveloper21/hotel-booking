@@ -11,7 +11,7 @@ client.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_A
  */
 export async function sendEmail({ to, subject, html }) {
   const emailPayload = {
-    sender: { email: process.env.BREVO_SENDER_EMAIL, name: "Hotel Booking" },
+    sender: { email: process.env.BREVO_SENDER_EMAIL, name: "Order Placed" },
     to: [{ email: to }],
     subject,
     htmlContent: html,
